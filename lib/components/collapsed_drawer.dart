@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'collapsed_button.dart';
@@ -10,7 +9,7 @@ class CollapsedDrawer extends StatefulWidget {
   /// [duration] is 250 milliseconds by default
   /// [fontSize] is 14 by default
   /// [buttonMargin] is set to All(4.0) by default
-  CollapsedDrawer({
+  const CollapsedDrawer({
     Key? key,
     this.leading,
     required this.icon,
@@ -21,7 +20,8 @@ class CollapsedDrawer extends StatefulWidget {
     this.duration = const Duration(milliseconds: 250),
     this.padding = const EdgeInsets.all(8),
     this.endButton,
-    this.buttonMargin=const EdgeInsets.all(4.0),
+    this.buttonMargin = const EdgeInsets.all(4.0),
+    this.backgroundColor,
   }) : super(key: key);
   final Widget? leading;
   final AnimatedIconData icon;
@@ -33,6 +33,8 @@ class CollapsedDrawer extends StatefulWidget {
   final EdgeInsetsGeometry padding;
   final CollapsedButton? endButton;
   final EdgeInsets buttonMargin;
+  final Color? backgroundColor;
+
   @override
   _CollapsedDrawerState createState() => _CollapsedDrawerState();
 }
@@ -60,7 +62,7 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
 
   @override
   Widget build(BuildContext context) {
-    if (l == null) l = Localizations.localeOf(context);
+    l ??= Localizations.localeOf(context);
     return SizedBox(
       child: GestureDetector(
         onHorizontalDragUpdate: (DragUpdateDetails e) async {
@@ -76,10 +78,22 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
         },
         child: SafeArea(
           child: AnimatedContainer(
+            decoration: BoxDecoration(
+              color:
+                  widget.backgroundColor ?? Theme.of(context).backgroundColor,
+              borderRadius: l!.languageCode == 'ar'
+                  ? const BorderRadius.only(
+                      bottomLeft: Radius.circular(15),
+                      topLeft: Radius.circular(15),
+                    )
+                  : const BorderRadius.only(
+                      bottomRight: Radius.circular(15),
+                      topRight: Radius.circular(15),
+                    ),
+            ),
             padding: widget.padding,
             duration: widget.duration,
             width: widthAnimation.value,
-            color: Theme.of(context).primaryColorDark,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -90,42 +104,37 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
                   direction: Axis.horizontal,
                   children: [
                     if (widget.leading == null ||
-                        widthAnimation.value == widget.minWidth)
-                      SizedBox()
+                        widthAnimation.value == widget.minWidth &&
+                            a.isCompleted)
+                      const SizedBox()
                     else
                       Expanded(
                         child: widget.leading as Widget,
                       ),
-                    Expanded(
-                      child: IconButton(
-                        padding: l!.languageCode == 'ar'
-                            ? EdgeInsets.only(right: 6)
-                            : EdgeInsets.zero,
-                        alignment: l!.languageCode == 'ar'
-                            ? Alignment.bottomRight
-                            : Alignment.center,
-                        onPressed: () async {
-                          if (widthAnimation.value <= widget.minWidth) {
-                            await a.forward();
-                          } else {
-                            await a.reverse();
-                          }
-                          setState(() {});
-                        },
-                        icon: AnimatedIcon(
-                          progress: a,
-                          icon: widget.icon,
-                        ),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      alignment: Alignment.center,
+                      onPressed: () async {
+                        if (widthAnimation.value <= widget.minWidth) {
+                          await a.forward();
+                        } else {
+                          await a.reverse();
+                        }
+                        setState(() {});
+                      },
+                      icon: AnimatedIcon(
+                        progress: a,
+                        icon: widget.icon,
                       ),
                     ),
                   ],
                 ),
-                widget.divider ?? SizedBox(),
+                widget.divider ?? const SizedBox(),
                 for (CollapsedButton value in widget.buttons)
                   collapseButton(value),
-                Spacer(),
+                const Spacer(),
                 widget.endButton == null
-                    ? SizedBox()
+                    ? const SizedBox()
                     : collapseButton(widget.endButton),
               ],
             ),
@@ -135,29 +144,80 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
     );
   }
 
-  Widget collapseButton(value) {
+  Widget collapseButton(CollapsedButton? value) {
+    if (value == null) {
+      return const SizedBox();
+    }
     return Container(
-      margin: EdgeInsets.all(4),
-      child: MaterialButton(
-        onPressed: value.onPressed,
-        color: Theme.of(context).primaryColor,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(flex: 1, child: value.icon),
-            value.title.toString() == 'SizedBox'
-                ? const SizedBox()
-                : widthAnimation.value == widget.minWidth
-                    ? const SizedBox()
-                    : Expanded(
-                        flex: 2,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: value.title,
-                        ),
-                      ),
-          ],
-        ),
+      margin: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Row(
+        children: [
+          widthAnimation.value == widget.minWidth
+              ? const SizedBox()
+              : Container(
+                  height: 50,
+                  width: 10,
+                  decoration: BoxDecoration(
+                    color: value.barColor ?? Theme.of(context).primaryColorDark,
+                    borderRadius: l!.languageCode == 'ar'
+                        ? const BorderRadius.only(
+                            topRight: Radius.circular(5),
+                            bottomRight: Radius.circular(5),
+                          )
+                        : const BorderRadius.only(
+                            topLeft: Radius.circular(5),
+                            bottomLeft: Radius.circular(5),
+                          ),
+                  ),
+                ),
+          Expanded(
+            child: TextButton(
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: l!.languageCode == 'ar'
+                        ? const BorderRadius.only(
+                            topLeft: Radius.circular(5),
+                            bottomLeft: Radius.circular(5),
+                          )
+                        : const BorderRadius.only(
+                            topRight: Radius.circular(5),
+                            bottomRight: Radius.circular(5),
+                          ),
+                  ),
+                ),
+                backgroundColor: MaterialStateProperty.resolveWith((states) {
+                  if (states.contains(MaterialState.hovered)) {
+                    return value.hoverColor ??
+                        Theme.of(context).primaryColor.withOpacity(0.2);
+                  }
+                  return value.color ?? Theme.of(context).primaryColor;
+                }),
+              ),
+              onPressed: value.onPressed,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(flex: 1, child: value.icon),
+                  value.title.toString() == 'SizedBox'
+                      ? const SizedBox()
+                      : widthAnimation.value == widget.minWidth
+                          ? const SizedBox()
+                          : Expanded(
+                              flex: 2,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: value.title,
+                              ),
+                            ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
