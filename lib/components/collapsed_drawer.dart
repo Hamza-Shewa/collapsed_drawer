@@ -22,6 +22,7 @@ class CollapsedDrawer extends StatefulWidget {
     this.endButton,
     this.buttonMargin = const EdgeInsets.all(4.0),
     this.backgroundColor,
+    this.endDrawer = false,
   }) : super(key: key);
   final Widget? leading;
   final AnimatedIconData icon;
@@ -34,6 +35,7 @@ class CollapsedDrawer extends StatefulWidget {
   final CollapsedButton? endButton;
   final EdgeInsets buttonMargin;
   final Color? backgroundColor;
+  final bool endDrawer;
 
   @override
   _CollapsedDrawerState createState() => _CollapsedDrawerState();
@@ -44,6 +46,7 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
   late AnimationController a;
   late Animation<double> widthAnimation;
   final List<Widget> buttons = [];
+  BorderRadiusGeometry? borderRadius;
   Locale? l;
 
   @override
@@ -67,6 +70,17 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
       child: GestureDetector(
         onHorizontalDragUpdate: (DragUpdateDetails e) async {
           if (a.isAnimating) return;
+          if (widget.endDrawer) {
+            if (l!.languageCode == 'en'
+                ? !e.primaryDelta!.isNegative
+                : e.primaryDelta!.isNegative) {
+              await a.reverse();
+            } else {
+              await a.forward();
+            }
+            setState(() {});
+            return;
+          }
           if (l!.languageCode == 'ar'
               ? !e.primaryDelta!.isNegative
               : e.primaryDelta!.isNegative) {
@@ -81,15 +95,25 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
             decoration: BoxDecoration(
               color:
                   widget.backgroundColor ?? Theme.of(context).backgroundColor,
-              borderRadius: l!.languageCode == 'ar'
-                  ? const BorderRadius.only(
-                      bottomLeft: Radius.circular(15),
-                      topLeft: Radius.circular(15),
-                    )
-                  : const BorderRadius.only(
-                      bottomRight: Radius.circular(15),
-                      topRight: Radius.circular(15),
-                    ),
+              borderRadius: widget.endDrawer == true
+                  ? l!.languageCode == 'en'
+                      ? const BorderRadius.only(
+                          bottomLeft: Radius.circular(15),
+                          topLeft: Radius.circular(15),
+                        )
+                      : const BorderRadius.only(
+                          bottomRight: Radius.circular(15),
+                          topRight: Radius.circular(15),
+                        )
+                  : l!.languageCode == 'ar'
+                      ? const BorderRadius.only(
+                          bottomLeft: Radius.circular(15),
+                          topLeft: Radius.circular(15),
+                        )
+                      : const BorderRadius.only(
+                          bottomRight: Radius.circular(15),
+                          topRight: Radius.circular(15),
+                        ),
             ),
             padding: widget.padding,
             duration: widget.duration,
@@ -103,14 +127,12 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
                   crossAxisAlignment: CrossAxisAlignment.center,
                   direction: Axis.horizontal,
                   children: [
-                    if (widget.leading == null ||
-                        widthAnimation.value == widget.minWidth &&
-                            a.isCompleted)
-                      const SizedBox()
-                    else
-                      Expanded(
-                        child: widget.leading as Widget,
-                      ),
+                    widthAnimation.value == widget.minWidth ||
+                            widget.leading == null
+                        ? const SizedBox()
+                        : Expanded(
+                            child: widget.leading as Widget,
+                          ),
                     IconButton(
                       padding: EdgeInsets.zero,
                       alignment: Alignment.center,
@@ -177,17 +199,21 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
             child: TextButton(
               style: ButtonStyle(
                 shape: MaterialStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: l!.languageCode == 'ar'
-                        ? const BorderRadius.only(
-                            topLeft: Radius.circular(5),
-                            bottomLeft: Radius.circular(5),
-                          )
-                        : const BorderRadius.only(
-                            topRight: Radius.circular(5),
-                            bottomRight: Radius.circular(5),
-                          ),
-                  ),
+                  widthAnimation.value == widget.minWidth
+                      ? RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        )
+                      : RoundedRectangleBorder(
+                          borderRadius: l!.languageCode == 'ar'
+                              ? const BorderRadius.only(
+                                  topLeft: Radius.circular(5),
+                                  bottomLeft: Radius.circular(5),
+                                )
+                              : const BorderRadius.only(
+                                  topRight: Radius.circular(5),
+                                  bottomRight: Radius.circular(5),
+                                ),
+                        ),
                 ),
                 backgroundColor: MaterialStateProperty.resolveWith((states) {
                   if (states.contains(MaterialState.hovered)) {
@@ -200,6 +226,7 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
               onPressed: value.onPressed,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Expanded(flex: 1, child: value.icon),
                   value.title.toString() == 'SizedBox'
