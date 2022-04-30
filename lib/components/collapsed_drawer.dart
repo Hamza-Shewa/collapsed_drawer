@@ -170,82 +170,125 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
     if (value == null) {
       return const SizedBox();
     }
-    return Container(
-      margin: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Row(
-        children: [
-          widthAnimation.value == widget.minWidth
-              ? const SizedBox()
-              : Container(
-                  height: 50,
-                  width: 10,
-                  decoration: BoxDecoration(
-                    color: value.barColor ?? Theme.of(context).primaryColorDark,
-                    borderRadius: l!.languageCode == 'ar'
-                        ? const BorderRadius.only(
-                            topRight: Radius.circular(5),
-                            bottomRight: Radius.circular(5),
-                          )
-                        : const BorderRadius.only(
-                            topLeft: Radius.circular(5),
-                            bottomLeft: Radius.circular(5),
-                          ),
-                  ),
+    return Row(
+      textDirection: widget.endDrawer == true
+          ? l!.languageCode == 'en'
+              ? TextDirection.rtl
+              : TextDirection.ltr
+          : l!.languageCode == 'ar'
+              ? TextDirection.rtl
+              : TextDirection.ltr,
+      children: [
+        widthAnimation.value == widget.minWidth
+            ? Container(
+                height: 35,
+                width: 5,
+                decoration: BoxDecoration(
+                  color: value.barColor ?? Theme.of(context).primaryColorDark,
+                  borderRadius: widget.endDrawer == true
+                      ? l!.languageCode == 'ar'
+                          ? const BorderRadius.only(
+                              bottomLeft: Radius.circular(15),
+                              topLeft: Radius.circular(15),
+                            )
+                          : const BorderRadius.only(
+                              bottomRight: Radius.circular(15),
+                              topRight: Radius.circular(15),
+                            )
+                      : l!.languageCode == 'en'
+                          ? const BorderRadius.only(
+                              bottomLeft: Radius.circular(15),
+                              topLeft: Radius.circular(15),
+                            )
+                          : const BorderRadius.only(
+                              bottomRight: Radius.circular(15),
+                              topRight: Radius.circular(15),
+                            ),
                 ),
-          Expanded(
-            child: TextButton(
-              style: ButtonStyle(
-                shape: MaterialStateProperty.all(
-                  widthAnimation.value == widget.minWidth
-                      ? RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        )
-                      : RoundedRectangleBorder(
+              )
+            : const SizedBox(),
+        Expanded(
+          child: Container(
+            margin: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Row(
+              children: [
+                widthAnimation.value == widget.minWidth
+                    ? const SizedBox()
+                    : Container(
+                        height: 50,
+                        width: 10,
+                        decoration: BoxDecoration(
+                          color: value.barColor ??
+                              Theme.of(context).primaryColorDark,
                           borderRadius: l!.languageCode == 'ar'
                               ? const BorderRadius.only(
-                                  topLeft: Radius.circular(5),
-                                  bottomLeft: Radius.circular(5),
-                                )
-                              : const BorderRadius.only(
                                   topRight: Radius.circular(5),
                                   bottomRight: Radius.circular(5),
+                                )
+                              : const BorderRadius.only(
+                                  topLeft: Radius.circular(5),
+                                  bottomLeft: Radius.circular(5),
                                 ),
                         ),
-                ),
-                backgroundColor: MaterialStateProperty.resolveWith((states) {
-                  if (states.contains(MaterialState.hovered)) {
-                    return value.hoverColor ??
-                        Theme.of(context).primaryColor.withOpacity(0.2);
-                  }
-                  return value.color ?? Theme.of(context).primaryColor;
-                }),
-              ),
-              onPressed: value.onPressed,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Expanded(flex: 1, child: value.icon),
-                  value.title.toString() == 'SizedBox'
-                      ? const SizedBox()
-                      : widthAnimation.value == widget.minWidth
-                          ? const SizedBox()
-                          : Expanded(
-                              flex: 2,
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: value.title,
+                      ),
+                Expanded(
+                  child: TextButton(
+                    style: ButtonStyle(
+                      shape: MaterialStateProperty.all(
+                        widthAnimation.value == widget.minWidth
+                            ? RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              )
+                            : RoundedRectangleBorder(
+                                borderRadius: l!.languageCode == 'ar'
+                                    ? const BorderRadius.only(
+                                        topLeft: Radius.circular(5),
+                                        bottomLeft: Radius.circular(5),
+                                      )
+                                    : const BorderRadius.only(
+                                        topRight: Radius.circular(5),
+                                        bottomRight: Radius.circular(5),
+                                      ),
                               ),
-                            ),
-                ],
-              ),
+                      ),
+                      backgroundColor:
+                          MaterialStateProperty.resolveWith((states) {
+                        if (states.contains(MaterialState.hovered)) {
+                          return value.hoverColor ??
+                              Theme.of(context).primaryColor.withOpacity(0.2);
+                        }
+                        return value.color ?? Theme.of(context).primaryColor;
+                      }),
+                    ),
+                    onPressed: value.onPressed,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 1, child: value.icon),
+                        value.title.toString() == 'SizedBox'
+                            ? const SizedBox()
+                            : widthAnimation.value == widget.minWidth
+                                ? const SizedBox()
+                                : Expanded(
+                                    flex: 2,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: value.title,
+                                    ),
+                                  ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
