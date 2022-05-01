@@ -186,7 +186,7 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
                 decoration: BoxDecoration(
                   color: value.barColor ?? Theme.of(context).primaryColorDark,
                   borderRadius: widget.endDrawer == true
-                      ? l!.languageCode == 'ar'
+                      ? l!.languageCode == 'en'
                           ? const BorderRadius.only(
                               bottomLeft: Radius.circular(15),
                               topLeft: Radius.circular(15),
@@ -195,7 +195,7 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
                               bottomRight: Radius.circular(15),
                               topRight: Radius.circular(15),
                             )
-                      : l!.languageCode == 'en'
+                      : l!.languageCode == 'ar'
                           ? const BorderRadius.only(
                               bottomLeft: Radius.circular(15),
                               topLeft: Radius.circular(15),
