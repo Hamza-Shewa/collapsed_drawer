@@ -48,6 +48,7 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
   final List<Widget> buttons = [];
   BorderRadiusGeometry? borderRadius;
   Locale? l;
+  final ScrollController _controller = ScrollController();
 
   @override
   void initState() {
@@ -118,47 +119,58 @@ class _CollapsedDrawerState extends State<CollapsedDrawer>
             padding: widget.padding,
             duration: widget.duration,
             width: widthAnimation.value,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Flex(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  direction: Axis.horizontal,
-                  children: [
-                    widthAnimation.value == widget.minWidth ||
-                            widget.leading == null
-                        ? const SizedBox()
-                        : Expanded(
-                            child: widget.leading as Widget,
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: _controller,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flex(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            direction: Axis.horizontal,
+                            children: [
+                              widthAnimation.value == widget.minWidth ||
+                                      widget.leading == null
+                                  ? const SizedBox()
+                                  : Expanded(
+                                      child: widget.leading as Widget,
+                                    ),
+                              IconButton(
+                                padding: EdgeInsets.zero,
+                                alignment: Alignment.center,
+                                onPressed: () async {
+                                  if (widthAnimation.value <= widget.minWidth) {
+                                    await a.forward();
+                                  } else {
+                                    await a.reverse();
+                                  }
+                                  setState(() {});
+                                },
+                                icon: AnimatedIcon(
+                                  progress: a,
+                                  icon: widget.icon,
+                                ),
+                              ),
+                            ],
                           ),
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      alignment: Alignment.center,
-                      onPressed: () async {
-                        if (widthAnimation.value <= widget.minWidth) {
-                          await a.forward();
-                        } else {
-                          await a.reverse();
-                        }
-                        setState(() {});
-                      },
-                      icon: AnimatedIcon(
-                        progress: a,
-                        icon: widget.icon,
+                          widget.divider ?? const SizedBox(),
+                          for (CollapsedButton value in widget.buttons)
+                            collapseButton(value),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-                widget.divider ?? const SizedBox(),
-                for (CollapsedButton value in widget.buttons)
-                  collapseButton(value),
-                const Spacer(),
-                widget.endButton == null
-                    ? const SizedBox()
-                    : collapseButton(widget.endButton),
-              ],
+                  ),
+                  if (widget.endButton != null)
+                    collapseButton(widget.endButton),
+                ],
+              ),
             ),
           ),
         ),
