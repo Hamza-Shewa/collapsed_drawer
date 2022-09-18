@@ -23,6 +23,7 @@ class CollapsedDrawer extends StatefulWidget {
     this.buttonMargin = const EdgeInsets.all(4.0),
     this.backgroundColor,
     this.endDrawer = false,
+    this.isExpanded = true,
   }) : super(key: key);
   final Widget? leading;
   final AnimatedIconData icon;
@@ -36,6 +37,7 @@ class CollapsedDrawer extends StatefulWidget {
   final EdgeInsets buttonMargin;
   final Color? backgroundColor;
   final bool endDrawer;
+  final bool isExpanded;
 
   @override
   CollapsedDrawerState createState() => CollapsedDrawerState();
@@ -48,12 +50,15 @@ class CollapsedDrawerState extends State<CollapsedDrawer>
   final List<Widget> buttons = [];
   BorderRadiusGeometry? borderRadius;
   Locale? l;
+  final ScrollController _controller = ScrollController();
 
   @override
   void initState() {
     a = AnimationController(vsync: this, duration: widget.duration);
-    widthAnimation =
-        Tween<double>(begin: widget.minWidth, end: widget.maxWidth).animate(a);
+    widthAnimation = Tween<double>(
+            end: widget.isExpanded ? widget.minWidth : widget.maxWidth,
+            begin: widget.isExpanded ? widget.maxWidth : widget.minWidth)
+        .animate(a);
     super.initState();
   }
 
@@ -74,9 +79,17 @@ class CollapsedDrawerState extends State<CollapsedDrawer>
             if (l!.languageCode == 'en'
                 ? !e.primaryDelta!.isNegative
                 : e.primaryDelta!.isNegative) {
-              await a.reverse();
+              if (widget.isExpanded) {
+                await a.reverse();
+              } else {
+                await a.forward();
+              }
             } else {
-              await a.forward();
+              if (widget.isExpanded) {
+                await a.forward();
+              } else {
+                await a.reverse();
+              }
             }
             setState(() {});
             return;
@@ -84,9 +97,17 @@ class CollapsedDrawerState extends State<CollapsedDrawer>
           if (l!.languageCode == 'ar'
               ? !e.primaryDelta!.isNegative
               : e.primaryDelta!.isNegative) {
-            await a.reverse();
+            if (widget.isExpanded) {
+              await a.forward();
+            } else {
+              await a.reverse();
+            }
           } else {
-            await a.forward();
+            if (widget.isExpanded) {
+              await a.reverse();
+            } else {
+              await a.forward();
+            }
           }
           setState(() {});
         },
@@ -118,47 +139,67 @@ class CollapsedDrawerState extends State<CollapsedDrawer>
             padding: widget.padding,
             duration: widget.duration,
             width: widthAnimation.value,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Flex(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  direction: Axis.horizontal,
-                  children: [
-                    widthAnimation.value == widget.minWidth ||
-                            widget.leading == null
-                        ? const SizedBox()
-                        : Expanded(
-                            child: widget.leading as Widget,
-                          ),
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      alignment: Alignment.center,
-                      onPressed: () async {
-                        if (widthAnimation.value <= widget.minWidth) {
-                          await a.forward();
-                        } else {
-                          await a.reverse();
-                        }
-                        setState(() {});
-                      },
-                      icon: AnimatedIcon(
-                        progress: a,
-                        icon: widget.icon,
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Flex(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    direction: Axis.horizontal,
+                    children: [
+                      widthAnimation.value == widget.minWidth ||
+                              widget.leading == null
+                          ? const SizedBox()
+                          : Expanded(
+                              child: widget.leading as Widget,
+                            ),
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        alignment: Alignment.center,
+                        onPressed: () async {
+                          if (widthAnimation.value <= widget.minWidth) {
+                            if (widget.isExpanded) {
+                              await a.reverse();
+                            } else {
+                              await a.forward();
+                            }
+                          } else {
+                            if (widget.isExpanded) {
+                              await a.forward();
+                            } else {
+                              await a.reverse();
+                            }
+                          }
+                          setState(() {});
+                        },
+                        icon: AnimatedIcon(
+                          progress: a,
+                          icon: widget.icon,
+                        ),
+                      ),
+                    ],
+                  ),
+                  widget.divider ?? const SizedBox(),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: _controller,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (CollapsedButton value in widget.buttons)
+                            collapseButton(value),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-                widget.divider ?? const SizedBox(),
-                for (CollapsedButton value in widget.buttons)
-                  collapseButton(value),
-                const Spacer(),
-                widget.endButton == null
-                    ? const SizedBox()
-                    : collapseButton(widget.endButton),
-              ],
+                  ),
+                  widget.endButton == null
+                      ? const SizedBox()
+                      : collapseButton(widget.endButton),
+                ],
+              ),
             ),
           ),
         ),
