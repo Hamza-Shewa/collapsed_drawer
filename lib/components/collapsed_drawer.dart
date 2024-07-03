@@ -112,7 +112,7 @@ class CollapsedDrawerState extends State<CollapsedDrawer>
       child: SafeArea(
         child: AnimatedContainer(
           decoration: BoxDecoration(
-            color: widget.backgroundColor ?? Theme.of(context).backgroundColor,
+            color: widget.backgroundColor ?? Theme.of(context).colorScheme.surface,
             borderRadius: widget.endDrawer == true
                 ? widget.textDirection == TextDirection.ltr
                     ? const BorderRadius.only(
@@ -263,21 +263,21 @@ class CollapsedDrawerState extends State<CollapsedDrawer>
                 Expanded(
                   child: TextButton(
                     style: ButtonStyle(
-                      side: MaterialStateProperty.all(
+                      side: WidgetStateProperty.all(
                         BorderSide(
                           color: Theme.of(context).primaryColor,
                         ),
                       ),
-                      shape: MaterialStateProperty.all(
+                      shape: WidgetStateProperty.all(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
                         ),
                       ),
-                      fixedSize: MaterialStateProperty.all(
+                      fixedSize: WidgetStateProperty.all(
                           Size(50, widget.maxWidth - 25)),
                       backgroundColor:
-                          MaterialStateProperty.resolveWith((states) {
-                        if (states.contains(MaterialState.hovered)) {
+                          WidgetStateProperty.resolveWith((states) {
+                        if (states.contains(WidgetState.hovered)) {
                           return value.hoverColor ??
                               Theme.of(context).primaryColor.withOpacity(0.2);
                         }
